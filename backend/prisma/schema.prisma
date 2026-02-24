@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  AUTHOR
+  READER
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(READER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  articles     Article[] @relation("AuthorArticles")
+  readLogs     ReadLog[]
+}
+
+model Article {
+  id        String         @id @default(uuid())
+  title     String
+  content   String
+  category  String
+  status    ArticleStatus  @default(DRAFT)
+  authorId  String
+  author    User           @relation("AuthorArticles", fields: [authorId], references: [id])
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  deletedAt DateTime?
+  readLogs  ReadLog[]
+  analytics DailyAnalytics[]
+}
+
+model ReadLog {
+  id        String   @id @default(uuid())
+  articleId String
+  readerId  String?
+  readAt    DateTime @default(now())
+  article   Article  @relation(fields: [articleId], references: [id])
+  reader    User?    @relation(fields: [readerId], references: [id])
+}
+
+model DailyAnalytics {
+  id        String   @id @default(uuid())
+  articleId String
+  date      DateTime
+  viewCount Int      @default(0)
+  article   Article  @relation(fields: [articleId], references: [id])
+
+  @@unique([articleId, date])
+}
