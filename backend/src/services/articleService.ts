@@ -124,24 +124,27 @@ const getPublicArticles = async (
   page: number,
   size: number,
 ): Promise<{ items: PublicArticle[]; total: number }> => {
-  const where = {
+  const where: Prisma.ArticleWhereInput = {
     status: "PUBLISHED" as ArticleStatus,
     deletedAt: null,
-    category: filters.category,
-    ...(filters.q
-      ? {
-          OR: [
-            { title: { contains: filters.q, mode: "insensitive" } },
-            { content: { contains: filters.q, mode: "insensitive" } },
-          ],
-        }
-      : {}),
-    ...(filters.author
-      ? {
-          author: { name: { contains: filters.author, mode: "insensitive" } },
-        }
-      : {}),
   };
+
+  if (filters.category) {
+    where.category = filters.category;
+  }
+
+  if (filters.q) {
+    where.OR = [
+      { title: { contains: filters.q, mode: "insensitive" } },
+      { content: { contains: filters.q, mode: "insensitive" } },
+    ];
+  }
+
+  if (filters.author) {
+    where.author = {
+      name: { contains: filters.author, mode: "insensitive" },
+    };
+  }
 
   const [items, total] = await Promise.all([
     prisma.article.findMany({
@@ -193,7 +196,7 @@ type DashboardArticle = Article & { totalViews: number };
 const getAuthorDashboard = async (
   authorId: string,
   page: number,
-  size: number
+  size: number,
 ): Promise<{ items: DashboardArticle[]; total: number }> => {
   const where = { authorId, deletedAt: null };
   const [items, total] = await Promise.all([

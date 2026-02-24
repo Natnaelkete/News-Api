@@ -6,7 +6,7 @@ const createRedisClient = (): Redis | null => {
   const redisUrl = process.env.REDIS_URL;
 
   if (redisUrl) {
-    return new Redis(redisUrl, { maxRetriesPerRequest: 3 });
+    return new Redis(redisUrl, { maxRetriesPerRequest: null });
   }
 
   const host = process.env.REDIS_HOST;
@@ -19,6 +19,7 @@ const createRedisClient = (): Redis | null => {
       host,
       port,
       password: process.env.REDIS_PASSWORD || undefined,
+      maxRetriesPerRequest: null,
     });
   }
 
