@@ -27,9 +27,7 @@ const createArticleSchema = z.object({
     .string()
     .min(1, "Title must be 1-150 characters")
     .max(150, "Title must be 1-150 characters"),
-  content: z
-    .string()
-    .min(50, "Content must be at least 50 characters"),
+  content: z.string().min(50, "Content must be at least 50 characters"),
   category: z
     .string()
     .min(1, "Category is required")
@@ -58,13 +56,13 @@ const paginationSchema = z.object({
   page: z
     .preprocess(
       (value) => (value === undefined ? undefined : Number(value)),
-      z.number().int().min(1)
+      z.number().int().min(1),
     )
     .default(1),
   size: z
     .preprocess(
       (value) => (value === undefined ? undefined : Number(value)),
-      z.number().int().min(1).max(50)
+      z.number().int().min(1).max(50),
     )
     .default(10),
 });
