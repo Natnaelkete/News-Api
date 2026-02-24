@@ -49,3 +49,30 @@ const aggregateDailyAnalytics = async (date: Date): Promise<void> => {
 };
 
 export { aggregateDailyAnalytics };
+
+const getArticleViewTotals = async (
+	articleIds: string[]
+): Promise<Map<string, number>> => {
+	if (articleIds.length === 0) {
+		return new Map();
+	}
+
+	const grouped = await prisma.dailyAnalytics.groupBy({
+		by: ["articleId"],
+		where: {
+			articleId: { in: articleIds },
+		},
+		_sum: {
+			viewCount: true,
+		},
+	});
+
+	const totals = new Map<string, number>();
+	for (const row of grouped) {
+		totals.set(row.articleId, row._sum.viewCount || 0);
+	}
+
+	return totals;
+};
+
+export { getArticleViewTotals };

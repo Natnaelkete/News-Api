@@ -1,5 +1,6 @@
 import { prisma } from "../config/database";
 import type { Article, ArticleStatus, Prisma } from "@prisma/client";
+import { getArticleViewTotals } from "./analyticsService";
 
 type CreateArticleInput = {
   title: string;
@@ -186,3 +187,32 @@ const getPublicArticleById = async (
 };
 
 export { getPublicArticles, getPublicArticleById };
+
+type DashboardArticle = Article & { totalViews: number };
+
+const getAuthorDashboard = async (
+  authorId: string,
+  page: number,
+  size: number
+): Promise<{ items: DashboardArticle[]; total: number }> => {
+  const where = { authorId, deletedAt: null };
+  const [items, total] = await Promise.all([
+    prisma.article.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * size,
+      take: size,
+    }),
+    prisma.article.count({ where }),
+  ]);
+
+  const totals = await getArticleViewTotals(items.map((item) => item.id));
+  const itemsWithViews = items.map((item) => ({
+    ...item,
+    totalViews: totals.get(item.id) || 0,
+  }));
+
+  return { items: itemsWithViews, total };
+};
+
+export { getAuthorDashboard };

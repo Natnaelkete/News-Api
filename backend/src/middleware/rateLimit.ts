@@ -14,4 +14,11 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-export { signupLimiter, loginLimiter };
+const apiLimiter = rateLimit({
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_MAX) || 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+export { signupLimiter, loginLimiter, apiLimiter };
