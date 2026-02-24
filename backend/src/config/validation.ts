@@ -56,15 +56,27 @@ const updateArticleSchema = z.object({
 
 const paginationSchema = z.object({
   page: z
-    .preprocess((value) => Number(value), z.number().int().min(1))
+    .preprocess(
+      (value) => (value === undefined ? undefined : Number(value)),
+      z.number().int().min(1)
+    )
     .default(1),
   size: z
-    .preprocess((value) => Number(value), z.number().int().min(1).max(50))
+    .preprocess(
+      (value) => (value === undefined ? undefined : Number(value)),
+      z.number().int().min(1).max(50)
+    )
     .default(10),
 });
 
 const articleIdSchema = z.object({
   id: z.string().uuid("Article id must be a valid UUID"),
+});
+
+const publicFeedSchema = paginationSchema.extend({
+  category: z.string().min(1).max(50).optional(),
+  author: z.string().min(1).max(100).optional(),
+  q: z.string().min(1).max(200).optional(),
 });
 
 export {
@@ -74,4 +86,5 @@ export {
   updateArticleSchema,
   paginationSchema,
   articleIdSchema,
+  publicFeedSchema,
 };

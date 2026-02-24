@@ -37,4 +37,32 @@ const authenticate = (
   }
 };
 
-export { authenticate };
+const optionalAuthenticate = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void => {
+  const header = req.headers.authorization || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+
+  if (!token) {
+    next();
+    return;
+  }
+
+  try {
+    const payload = jwt.verify(token, jwtSecret!) as JwtPayload;
+
+    if (payload.sub && payload.role) {
+      req.user = { id: payload.sub, role: payload.role };
+      next();
+      return;
+    }
+
+    errorResponse(res, "Unauthorized", ["Invalid token payload"], 401);
+  } catch (error) {
+    errorResponse(res, "Unauthorized", ["Invalid or expired token"], 401);
+  }
+};
+
+export { authenticate, optionalAuthenticate };
