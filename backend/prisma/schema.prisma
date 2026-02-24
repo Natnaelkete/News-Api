@@ -20,9 +20,10 @@ enum ArticleStatus {
 
 model User {
   id           String    @id @default(uuid())
-  name         String
-  email        String    @unique
-  passwordHash String
+  // Name regex validation is enforced at the API layer.
+  name         String    @db.VarChar(100)
+  email        String    @unique @db.VarChar(255)
+  passwordHash String    @db.VarChar(255)
   role         Role      @default(READER)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -31,15 +32,16 @@ model User {
 }
 
 model Article {
-  id        String         @id @default(uuid())
-  title     String
+  id        String           @id @default(uuid())
+  // Title length and content minimum are enforced at the API layer.
+  title     String           @db.VarChar(150)
   content   String
-  category  String
-  status    ArticleStatus  @default(DRAFT)
+  category  String           @db.VarChar(50)
+  status    ArticleStatus    @default(DRAFT)
   authorId  String
-  author    User           @relation("AuthorArticles", fields: [authorId], references: [id])
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  author    User             @relation("AuthorArticles", fields: [authorId], references: [id])
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
   deletedAt DateTime?
   readLogs  ReadLog[]
   analytics DailyAnalytics[]
